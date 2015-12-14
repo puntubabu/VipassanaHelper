@@ -1,0 +1,3 @@
+rootProject.name = 'VipassanaTimerApp'
+
+include ':app'
