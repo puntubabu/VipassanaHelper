@@ -8,6 +8,7 @@
   "dependencies": {
     "moment": "^2.10.6",
     "react-native": "^0.16.0",
+    "react-native-audioplayer": "^0.2.0",
     "react-timer-mixin": "^0.13.3"
   }
 }
