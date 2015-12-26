@@ -39,6 +39,7 @@ var VipassanaTimerApp = React.createClass({
       startStopText: "Start",
       hasStarted: false,
       isPlayingAudio: false,
+      btnStyle: "btn",
     };
   },
 
@@ -52,6 +53,7 @@ var VipassanaTimerApp = React.createClass({
     this.setState({ timeDiff: timeDiff });
 
     //If anechya or bhavatu
+    //todo: figure out a simpler way to play audio at correct times
     if (timeDiff >= PLAY_AUDIO_1 && timeDiff < (PLAY_AUDIO_1 + PADDING)) {
       AudioPlayer.play(AUDIO_1);
     } else if (timeDiff >= PLAY_AUDIO_2 && timeDiff < (PLAY_AUDIO_2 + PADDING)) {
@@ -70,6 +72,7 @@ var VipassanaTimerApp = React.createClass({
       startTime: new Date().getTime(),
       startStopText: STOP_TEXT,
       hasStarted: true,
+      btnStyle: "btnStop",
     });
 
     this.intervalFunction = this.setInterval(
@@ -83,8 +86,10 @@ var VipassanaTimerApp = React.createClass({
 
     this.setState({ 
       hasStarted: false, 
-      startStopText: START_TEXT
+      startStopText: START_TEXT,
+      btnStyle: "btn",
     });
+    AudioPlayer.stop();
 
     clearInterval(this.intervalFunction);
   },
@@ -115,6 +120,7 @@ var VipassanaTimerApp = React.createClass({
   render: function() {
 
     var elapsedTime = this.state.timeDiff ? moment.utc(this.state.timeDiff).format("HH:mm:ss").toString() : "00:00:00";
+    var btnStyle = this.state.btnStyle;
 
     return (
       <View style={styles.outerContainer}>
@@ -125,7 +131,7 @@ var VipassanaTimerApp = React.createClass({
           <Text style={styles.elapsedTime}>{elapsedTime}</Text>
         </View>
         <View style={styles.innerContainer}>
-          <TouchableHighlight onPress={this.startOrStop} style={styles.btn}>
+          <TouchableHighlight onPress={this.startOrStop} style={styles[btnStyle]}>
             <Text style={styles.startStopText}>{this.state.startStopText}</Text>
           </TouchableHighlight>
           <TouchableHighlight onPress={this.reset} style={styles.btn}>
@@ -162,11 +168,18 @@ var styles = StyleSheet.create({
     justifyContent: 'center',
   },
   btn: {
-    backgroundColor: '#F00',
+    backgroundColor: '#00ff00',
     borderRadius: 3,
     borderStyle: 'solid',
     borderWidth: 2,
     borderColor: '#000'
+  },
+  btnStop: {
+    backgroundColor: '#F00',
+    borderRadius: 3,
+    borderStyle: 'solid',
+    borderWidth: 2,
+    borderColor: '#000'    
   },
   backgroundImage: {
     height:180,
