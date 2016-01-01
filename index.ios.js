@@ -11,7 +11,7 @@ var AudioPlayer = require('react-native-audioplayer');
 
 //Constants
 var START_TEXT = 'Start';
-var STOP_TEXT = 'Stop';
+var PAUSE_TEXT = 'Pause';
 var RESET_TEXT = 'Reset';
 var AUDIO_0 = '0.mp3';
 var AUDIO_1 = '1.mp3';
@@ -35,21 +35,21 @@ var VipassanaTimerApp = React.createClass({
   getInitialState: function() {
     return {
       startTime: null,
-      timeDiff: null,
-      startStopText: "Start",
+      timeDiff: 0,
+      startPauseText: "Start",
       hasStarted: false,
-      isPlayingAudio: false,
+      isPaused: false,
       btnStyle: "btn",
+      elapsedTime:0,
     };
   },
 
-  componentDidMount: function() {
-
-  },
+  componentDidMount: function() {},
 
   handleTick: function() {
     var that = this;
-    var timeDiff = new Date().getTime() - this.state.startTime;
+    var time = new Date().getTime();
+    var timeDiff = Math.floor(time - (this.state.startTime + this.state.elapsedTime));
     this.setState({ timeDiff: timeDiff });
 
     //If anechya or bhavatu
@@ -58,60 +58,74 @@ var VipassanaTimerApp = React.createClass({
       AudioPlayer.play(AUDIO_1);
     } else if (timeDiff >= PLAY_AUDIO_2 && timeDiff < (PLAY_AUDIO_2 + PADDING)) {
       AudioPlayer.play(AUDIO_2);
-      that.stop();
+      that.pause();
     }
   },
 
   start: function() {
     var that = this;
 
-    //Start Intro Audio
-    AudioPlayer.play(AUDIO_0);
+    if (this.state.hasStarted && this.state.isPaused) {
+      AudioPlayer.play();
+      this.setState({
 
-    this.setState({ 
-      startTime: new Date().getTime(),
-      startStopText: STOP_TEXT,
-      hasStarted: true,
-      btnStyle: "btnStop",
-    });
+        startPauseText: PAUSE_TEXT,
+        btnStyle: "btnPause",
+        isPaused: false,
+
+      });
+
+    } else {
+
+      //Start Intro Audio
+      AudioPlayer.play(AUDIO_0);
+
+      this.setState({ 
+        startTime: new Date().getTime(),
+        startPauseText: PAUSE_TEXT,
+        hasStarted:true,
+        btnStyle: "btnPause",
+      });
+
+    }
 
     this.intervalFunction = this.setInterval(
       () => {
         that.handleTick();
       }, 1000
     );
+
   },
 
-  stop: function() {
-
-    this.setState({ 
-      hasStarted: false, 
-      startStopText: START_TEXT,
+  togglePause: function() {
+    var elapsedTime = Math.floor(this.state.timeDiff);
+    this.setState({
+      startPauseText: START_TEXT,
       btnStyle: "btn",
+      isPaused: true,
+      elapsedTime: elapsedTime,
     });
-    AudioPlayer.stop();
 
+    AudioPlayer.pause();
     clearInterval(this.intervalFunction);
-  },
-
-  startOrStop: function() {
-
-    var that = this;
-    var startOrStopText;
-
-    if (this.state.hasStarted)
-      this.stop();
-    else
-      this.start();
-
   },
 
   reset: function() {
-    clearInterval(this.intervalFunction);
-    this.setState({ timeDiff: 0, startStopText: START_TEXT });
+    this.setState({ 
+      timeDiff: 0, 
+      startPauseText: START_TEXT,
+      hasStarted:false,
+      isPaused: false,
+      btnStyle: "btn",
+      elapsedTime: 0,
+    },
+    function() {
+      AudioPlayer.stop();
+      clearInterval(this.intervalFunction);
+    });
   },
 
-  intervalFunction: function() { },
+  intervalFunction: function() {},
 
   toggleInterval: function() {
     clearInterval(this.intervalFunction);
@@ -121,6 +135,7 @@ var VipassanaTimerApp = React.createClass({
 
     var elapsedTime = this.state.timeDiff ? moment.utc(this.state.timeDiff).format("HH:mm:ss").toString() : "00:00:00";
     var btnStyle = this.state.btnStyle;
+    var startOrPause = (this.state.hasStarted && !this.state.isPaused) ? this.togglePause : this.start;
 
     return (
       <View style={styles.outerContainer}>
@@ -131,11 +146,11 @@ var VipassanaTimerApp = React.createClass({
           <Text style={styles.elapsedTime}>{elapsedTime}</Text>
         </View>
         <View style={styles.innerContainer}>
-          <TouchableHighlight onPress={this.startOrStop} style={styles[btnStyle]}>
-            <Text style={styles.startStopText}>{this.state.startStopText}</Text>
+          <TouchableHighlight onPress={startOrPause} style={styles[btnStyle]}>
+            <Text style={styles.startPauseText}>{this.state.startPauseText}</Text>
           </TouchableHighlight>
           <TouchableHighlight onPress={this.reset} style={styles.btn}>
-            <Text style={styles.startStopText}>Reset</Text>
+            <Text style={styles.startPauseText}>Reset</Text>
           </TouchableHighlight>
         </View>
       </View>
@@ -174,7 +189,7 @@ var styles = StyleSheet.create({
     borderWidth: 2,
     borderColor: '#000'
   },
-  btnStop: {
+  btnPause: {
     backgroundColor: '#F00',
     borderRadius: 3,
     borderStyle: 'solid',
@@ -185,7 +200,7 @@ var styles = StyleSheet.create({
     height:180,
     width:180,
   },
-  startStopText: {
+  startPauseText: {
     fontSize: 28,
     alignItems: 'center',
   },
