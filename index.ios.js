@@ -49,7 +49,7 @@ var VipassanaTimerApp = React.createClass({
   handleTick: function() {
     var that = this;
     var time = new Date().getTime();
-    var timeDiff = Math.floor(time - (this.state.startTime + this.state.elapsedTime));
+    var timeDiff = time - (this.state.startTime - this.state.elapsedTime);
     this.setState({ timeDiff: timeDiff });
 
     //If anechya or bhavatu
@@ -69,6 +69,7 @@ var VipassanaTimerApp = React.createClass({
       AudioPlayer.play();
       this.setState({
 
+        startTime: new Date().getTime(),
         startPauseText: PAUSE_TEXT,
         btnStyle: "btnPause",
         isPaused: false,
@@ -98,7 +99,7 @@ var VipassanaTimerApp = React.createClass({
   },
 
   togglePause: function() {
-    var elapsedTime = Math.floor(this.state.timeDiff);
+    var elapsedTime = this.state.timeDiff;
     this.setState({
       startPauseText: START_TEXT,
       btnStyle: "btn",
