@@ -4,6 +4,7 @@ var React = require('react-native');
 var TimerMixin = require('react-timer-mixin');
 var moment = require('moment');
 var AudioPlayer = require('react-native-audioplayer');
+var LinearGradient = require('react-native-linear-gradient');
 
 //Constants
 var START_TEXT = 'Start';
@@ -135,22 +136,24 @@ var VipassanaTimerApp = React.createClass({
     var startOrPause = (this.state.hasStarted && !this.state.isPaused) ? this.togglePause : this.start;
 
     return (
-      <View style={styles.outerContainer}>
-        <View style={styles.centerItem}>
-          <Image style={styles.backgroundImage} source={require('./dharma_wheel.png')} />
+      <LinearGradient colors={['#4c669f', '#3b5998', '#192f6a']} style={styles.backgroundGradient}>
+        <View style={styles.outerContainer}>
+          <View style={styles.centerItem}>
+            <Image style={styles.backgroundImage} source={require('./dharma_wheel.png')} />
+          </View>
+          <View style={styles.centerItem}>
+            <Text style={styles.elapsedTime}>{elapsedTime}</Text>
+          </View>
+          <View style={styles.innerContainer}>
+            <TouchableHighlight onPress={startOrPause} style={styles[btnStyle]}>
+              <Text style={styles.startPauseText}>{this.state.startPauseText}</Text>
+            </TouchableHighlight>
+            <TouchableHighlight onPress={this.reset} style={styles.btn}>
+              <Text style={styles.startPauseText}>Reset</Text>
+            </TouchableHighlight>
+          </View>
         </View>
-        <View style={styles.centerItem}>
-          <Text style={styles.elapsedTime}>{elapsedTime}</Text>
-        </View>
-        <View style={styles.innerContainer}>
-          <TouchableHighlight onPress={startOrPause} style={styles[btnStyle]}>
-            <Text style={styles.startPauseText}>{this.state.startPauseText}</Text>
-          </TouchableHighlight>
-          <TouchableHighlight onPress={this.reset} style={styles.btn}>
-            <Text style={styles.startPauseText}>Reset</Text>
-          </TouchableHighlight>
-        </View>
-      </View>
+      </LinearGradient>
 
 
     );
@@ -159,20 +162,23 @@ var VipassanaTimerApp = React.createClass({
 });
 
 var styles = StyleSheet.create({
+  backgroundGradient: {
+    flex: 1,
+  },
   outerContainer: {
-    backgroundColor: '#F2F2F2',
     marginTop: 25,
     flexDirection: 'column',
     flex:1,
+    backgroundColor:'transparent'
   },
   innerContainer: {
-    backgroundColor: '#F2F2F2',
     flex:1,
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
     marginLeft: 40,
     marginRight: 40,
+    backgroundColor:'transparent'
   },
   centerItem: {
     flex:1,
@@ -180,30 +186,26 @@ var styles = StyleSheet.create({
     justifyContent: 'center',
   },
   btn: {
-    backgroundColor: '#00ff00',
-    borderRadius: 3,
-    borderStyle: 'solid',
-    borderWidth: 2,
-    borderColor: '#000'
+    shadowOffset: {width: 5, height: 5},
+    shadowColor: "#000"
   },
   btnPause: {
-    backgroundColor: '#F00',
-    borderRadius: 3,
-    borderStyle: 'solid',
-    borderWidth: 2,
-    borderColor: '#000'    
+    shadowOffset: {width: 5, height: 5},
+    shadowColor: "#000"    
   },
   backgroundImage: {
     height:180,
     width:180,
   },
   startPauseText: {
+    color:'#FFF',
     fontSize: 28,
     alignItems: 'center',
   },
   elapsedTime: {
     fontSize: 42,
     marginTop: 50,
+    color:"#FFF",
   },
 });
 

@@ -14,6 +14,9 @@ import com.facebook.soloader.SoLoader;
 //RN Audio Player Module
 import com.sh3rawi.RNAudioPlayer.*;
 
+//RN Linear Gradient Module
+import com.BV.LinearGradient.LinearGradientPackage;
+
 public class MainActivity extends Activity implements DefaultHardwareBackBtnHandler {
 
     private ReactInstanceManager mReactInstanceManager;
@@ -30,6 +33,7 @@ public class MainActivity extends Activity implements DefaultHardwareBackBtnHand
                 .setJSMainModuleName("index.android")
                 .addPackage(new MainReactPackage())
                 .addPackage(new RNAudioPlayer())
+                .addPackage(new LinearGradientPackage())
                 .setUseDeveloperSupport(BuildConfig.DEBUG)
                 .setInitialLifecycleState(LifecycleState.RESUMED)
                 .build();
