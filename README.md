@@ -1,4 +1,5 @@
 # VipassanaHelper
+**Google Play Store**: https://play.google.com/store/apps/details?id=com.vipassanatimerapp
 
 This is a Vipassana meditation stopwatch.
 Features to come:
@@ -13,7 +14,7 @@ Short-term goals:
 
 May all beings be happy!
 
-Google Play Store: https://play.google.com/store/apps/details?id=com.vipassanatimerapp
+
 
 The MIT License (MIT)
 
