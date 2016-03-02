@@ -1,36 +1,36 @@
 'use strict';
-
-var React = require('react-native');
-var TimerMixin = require('react-timer-mixin');
-var moment = require('moment');
-var AudioPlayer = require('react-native-audioplayer');
-var LinearGradient = require('react-native-linear-gradient');
-
-//Constants
-var START_TEXT = 'Start';
-var PAUSE_TEXT = 'Pause';
-var RESET_TEXT = 'Reset';
-var AUDIO_0 = 'a.mp3';
-var AUDIO_1 = 'b.mp3';
-var AUDIO_2 = 'c.mp3';
-var PLAY_AUDIO_1 = 2700000;
-var PLAY_AUDIO_2 = 3540000;
-var PADDING = 2000;
-
-var {
+import React, {
   AppRegistry,
+  Component,
   StyleSheet,
-  ListView,
   Text,
   View,
   Image,
-  TouchableHighlight,
-} = React;
+  TouchableHighlight
+} from 'react-native';
 
-var VipassanaTimerApp = React.createClass({
-  mixins: [TimerMixin],
-  getInitialState: function() {
-    return {
+import LinearGradient from 'react-native-linear-gradient';
+import AudioPlayer from 'react-native-audioplayer';
+import moment from 'moment';
+
+let START_TEXT = 'Start';
+let PAUSE_TEXT = 'Pause';
+let RESET_TEXT = 'Reset';
+let AUDIO_0 = 'a.mp3';
+let AUDIO_1 = 'b.mp3';
+let AUDIO_2 = 'c.mp3';
+// let PLAY_AUDIO_1 = 2700000;
+// let PLAY_AUDIO_2 = 3540000;
+let PLAY_AUDIO_1 = 270000;
+let PLAY_AUDIO_2 = 554000;
+let PADDING = 2000;
+
+
+class VipassanaTimer extends Component {
+  
+  constructor(props) {
+    super(props);
+    this.state = {
       startTime: null,
       timeDiff: 0,
       startPauseText: "Start",
@@ -38,12 +38,38 @@ var VipassanaTimerApp = React.createClass({
       isPaused: false,
       btnStyle: "btn",
       elapsedTime:0,
-    };
-  },
+      queue: ['AUDIO_1', 'AUDIO_2']
+    }
+  }
 
-  componentDidMount: function() {},
+  render() {
+    var elapsedTime = this.state.timeDiff ? moment.utc(this.state.timeDiff).format("HH:mm:ss").toString() : "00:00:00";
+    var btnStyle = this.state.btnStyle;
+    var startOrPause = (this.state.hasStarted && !this.state.isPaused) ? 
+        this.togglePause.bind(this) : this.start.bind(this);
+    return (
+      <LinearGradient colors={['#4c669f', '#3b5998', '#192f6a']} style={styles.backgroundGradient}>
+        <View style={styles.outerContainer}>
+          <View style={styles.centerItem}>
+            <Image style={styles.backgroundImage} source={require('./dharma_wheel.png')} />
+          </View>
+          <View style={styles.centerItem}>
+            <Text style={styles.elapsedTime}>{elapsedTime}</Text>
+          </View>
+          <View style={styles.innerContainer}>
+            <TouchableHighlight onPress={startOrPause} style={styles.btn}>
+              <Text style={styles.startPauseText}>{this.state.startPauseText}</Text>
+            </TouchableHighlight>
+            <TouchableHighlight onPress={this.reset.bind(this)} style={styles.btn}>
+              <Text style={styles.startPauseText}>Reset</Text>
+            </TouchableHighlight>
+          </View>
+        </View>
+      </LinearGradient>
+    );
+  }
 
-  handleTick: function() {
+  handleTick() {
     var that = this;
     var time = new Date().getTime();
     var timeDiff = time - (this.state.startTime - this.state.elapsedTime);
@@ -57,9 +83,9 @@ var VipassanaTimerApp = React.createClass({
       AudioPlayer.play(AUDIO_2);
       that.pause();
     }
-  },
+  }
 
-  start: function() {
+  start() {
     var that = this;
 
     if (this.state.hasStarted && this.state.isPaused) {
@@ -87,15 +113,30 @@ var VipassanaTimerApp = React.createClass({
 
     }
 
-    this.intervalFunction = this.setInterval(
+    this.intervalFunction = setInterval(
       () => {
         that.handleTick();
       }, 1000
     );
 
-  },
+    this.timeoutFunction = setTimeout(
+      () => {
+        let audio = that.state.queue.shift();
+        that.playAudio.bind(that, audio);
+      }, PLAY_AUDIO_1 - this.state.timeDiff
+    )
 
-  togglePause: function() {
+  }
+
+  playAudio(audio) {
+    AudioPlayer.play(audio);
+  }
+
+  intervalFunction() {}
+
+  timeoutFunction() {}
+
+  togglePause() {
     var elapsedTime = this.state.timeDiff;
     this.setState({
       startPauseText: START_TEXT,
@@ -106,9 +147,9 @@ var VipassanaTimerApp = React.createClass({
 
     AudioPlayer.pause();
     clearInterval(this.intervalFunction);
-  },
+  }
 
-  reset: function() {
+  reset() {
     this.setState({ 
       timeDiff: 0, 
       startPauseText: START_TEXT,
@@ -121,47 +162,15 @@ var VipassanaTimerApp = React.createClass({
       AudioPlayer.stop();
       clearInterval(this.intervalFunction);
     });
-  },
+  }
 
-  intervalFunction: function() {},
+  componentWillUnmount() {
+    clearTimeout(this.timer);
+  }
 
-  toggleInterval: function() {
-    clearInterval(this.intervalFunction);
-  },
+}
 
-  render: function() {
-
-    var elapsedTime = this.state.timeDiff ? moment.utc(this.state.timeDiff).format("HH:mm:ss").toString() : "00:00:00";
-    var btnStyle = this.state.btnStyle;
-    var startOrPause = (this.state.hasStarted && !this.state.isPaused) ? this.togglePause : this.start;
-
-    return (
-      <LinearGradient colors={['#4c669f', '#3b5998', '#192f6a']} style={styles.backgroundGradient}>
-        <View style={styles.outerContainer}>
-          <View style={styles.centerItem}>
-            <Image style={styles.backgroundImage} source={require('./dharma_wheel.png')} />
-          </View>
-          <View style={styles.centerItem}>
-            <Text style={styles.elapsedTime}>{elapsedTime}</Text>
-          </View>
-          <View style={styles.innerContainer}>
-            <TouchableHighlight onPress={startOrPause} style={styles[btnStyle]}>
-              <Text style={styles.startPauseText}>{this.state.startPauseText}</Text>
-            </TouchableHighlight>
-            <TouchableHighlight onPress={this.reset} style={styles.btn}>
-              <Text style={styles.startPauseText}>Reset</Text>
-            </TouchableHighlight>
-          </View>
-        </View>
-      </LinearGradient>
-
-
-    );
-  },
-
-});
-
-var styles = StyleSheet.create({
+const styles = StyleSheet.create({
   backgroundGradient: {
     flex: 1,
   },
@@ -209,4 +218,4 @@ var styles = StyleSheet.create({
   },
 });
 
-AppRegistry.registerComponent('VipassanaTimerApp', () => VipassanaTimerApp);
+AppRegistry.registerComponent('VipassanaTimer', () => VipassanaTimer);

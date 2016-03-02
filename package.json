@@ -1,15 +1,14 @@
 {
-  "name": "VipassanaTimerApp",
+  "name": "VipassanaTimer",
   "version": "0.0.1",
   "private": true,
   "scripts": {
     "start": "react-native start"
   },
   "dependencies": {
-    "moment": "^2.10.6",
-    "react-native": "^0.16.0",
+    "moment": "^2.11.2",
+    "react-native": "^0.20.0",
     "react-native-audioplayer": "^0.2.0",
-    "react-native-linear-gradient": "^1.3.0",
-    "react-timer-mixin": "^0.13.3"
+    "react-native-linear-gradient": "^1.5.2"
   }
 }
