@@ -43,9 +43,9 @@ class VipassanaTimer extends Component {
   }
 
   render() {
-    var elapsedTime = this.state.timeDiff ? moment.utc(this.state.timeDiff).format("HH:mm:ss").toString() : "00:00:00";
-    var btnStyle = this.state.btnStyle;
-    var startOrPause = (this.state.hasStarted && !this.state.isPaused) ? 
+    let elapsedTime = this.state.timeDiff ? moment.utc(this.state.timeDiff).format("HH:mm:ss").toString() : "00:00:00";
+    let btnStyle = this.state.btnStyle;
+    let startOrPause = (this.state.hasStarted && !this.state.isPaused) ?
         this.togglePause.bind(this) : this.start.bind(this);
     return (
       <LinearGradient colors={['#4c669f', '#3b5998', '#192f6a']} style={styles.backgroundGradient}>
@@ -70,9 +70,9 @@ class VipassanaTimer extends Component {
   }
 
   handleTick() {
-    var that = this;
-    var time = new Date().getTime();
-    var timeDiff = time - (this.state.startTime - this.state.elapsedTime);
+    const that = this;
+    let time = new Date().getTime();
+    let timeDiff = time - (this.state.startTime - this.state.elapsedTime);
     this.setState({ timeDiff: timeDiff });
 
     //If anechya or bhavatu
@@ -86,7 +86,7 @@ class VipassanaTimer extends Component {
   }
 
   start() {
-    var that = this;
+    const that = this;
 
     if (this.state.hasStarted && this.state.isPaused) {
       AudioPlayer.play();
@@ -137,7 +137,7 @@ class VipassanaTimer extends Component {
   timeoutFunction() {}
 
   togglePause() {
-    var elapsedTime = this.state.timeDiff;
+    const elapsedTime = this.state.timeDiff;
     this.setState({
       startPauseText: START_TEXT,
       btnStyle: "btn",
