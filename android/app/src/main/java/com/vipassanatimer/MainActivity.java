@@ -8,9 +8,6 @@ import java.util.Arrays;
 import java.util.List;
 
 //Add modules
-import com.BV.LinearGradient.LinearGradientPackage;
-import com.sh3rawi.RNAudioPlayer.RNAudioPlayer;
-
 public class MainActivity extends ReactActivity {
 
     /**
@@ -38,9 +35,7 @@ public class MainActivity extends ReactActivity {
     @Override
     protected List<ReactPackage> getPackages() {
       return Arrays.<ReactPackage>asList(
-        new MainReactPackage(),
-        new LinearGradientPackage(),
-        new RNAudioPlayer()
+        new MainReactPackage()
       );
     }
 }

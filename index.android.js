@@ -1,52 +1,58 @@
 'use strict';
-import React, {
+import {
   AppRegistry,
-  Component,
   StyleSheet,
   Text,
   View,
   Image,
   TouchableHighlight
 } from 'react-native';
+import React, { Component } from 'react';
 
 import LinearGradient from 'react-native-linear-gradient';
 import AudioPlayer from 'react-native-audioplayer';
 import moment from 'moment';
+const timer = require('react-native-timer');
 
-let START_TEXT = 'Start';
-let PAUSE_TEXT = 'Pause';
-let RESET_TEXT = 'Reset';
-let AUDIO_0 = 'a.mp3';
-let AUDIO_1 = 'b.mp3';
-let AUDIO_2 = 'c.mp3';
-// let PLAY_AUDIO_1 = 2700000;
-// let PLAY_AUDIO_2 = 3540000;
-let PLAY_AUDIO_1 = 270000;
-let PLAY_AUDIO_2 = 554000;
-let PADDING = 2000;
-
+const START_TEXT = 'Start',
+      PAUSE_TEXT = 'Pause',
+      RESET_TEXT = 'Reset',
+      AUDIO_0 = 'a.mp3',
+      AUDIO_1 = 'b.mp3',
+      AUDIO_2 = 'c.mp3',
+      PLAY_AUDIO_1 = 270000,
+      PLAY_AUDIO_2 = 554000,
+      PADDING = 2000;
 
 class VipassanaTimer extends Component {
   
   constructor(props) {
     super(props);
     this.state = {
-      startTime: null,
-      timeDiff: 0,
       startPauseText: "Start",
       hasStarted: false,
-      isPaused: false,
+      isPaused: undefined,
       btnStyle: "btn",
       elapsedTime:0,
-      queue: ['AUDIO_1', 'AUDIO_2']
+      audioQueue: [
+        { trackName: AUDIO_1, playTime: PLAY_AUDIO_1 }, 
+        { trackName: AUDIO_2, playTime: PLAY_AUDIO_2 }
+      ]
     }
   }
 
+  componentWillUnmount() {
+    clearTimeout(timer);
+    clearInterval(timer);
+  }
+
+  intervalFunction() {}
+
   render() {
-    let elapsedTime = this.state.timeDiff ? moment.utc(this.state.timeDiff).format("HH:mm:ss").toString() : "00:00:00";
+    //let elapsedTime = this.state.timeDiff ? moment.utc(this.state.timeDiff).format("HH:mm:ss").toString() : "00:00:00";
     let btnStyle = this.state.btnStyle;
-    let startOrPause = (this.state.hasStarted && !this.state.isPaused) ?
-        this.togglePause.bind(this) : this.start.bind(this);
+    const startOrPause = this.state.hasStarted ? this.startTimer : this.pauseTimer;
+
     return (
       <LinearGradient colors={['#4c669f', '#3b5998', '#192f6a']} style={styles.backgroundGradient}>
         <View style={styles.outerContainer}>
@@ -54,7 +60,7 @@ class VipassanaTimer extends Component {
             <Image style={styles.backgroundImage} source={require('./dharma_wheel.png')} />
           </View>
           <View style={styles.centerItem}>
-            <Text style={styles.elapsedTime}>{elapsedTime}</Text>
+            <Text style={styles.elapsedTime}>{this.state.elapsedTime}</Text>
           </View>
           <View style={styles.innerContainer}>
             <TouchableHighlight onPress={startOrPause} style={styles.btn}>
@@ -68,104 +74,88 @@ class VipassanaTimer extends Component {
       </LinearGradient>
     );
   }
+  
+  maybePlayNextAudio = (elapsedTime) => {
+    const nextInQueue = this.state.audioQueue[0];
+    if (nextInQueue && (elapsedTime === nextInQueue.playTime)) {
+      AudioPlayer.play(nextInQueue.trackName);
+      const newQueue = this.state.audioQueue.shift();
+      this.setState({ audioQueue: newQueue });
+    }
+  }
 
   handleTick() {
-    const that = this;
-    let time = new Date().getTime();
-    let timeDiff = time - (this.state.startTime - this.state.elapsedTime);
-    this.setState({ timeDiff: timeDiff });
-
-    //If anechya or bhavatu
-    //todo: figure out a simpler way to play audio at correct times
-    if (timeDiff >= PLAY_AUDIO_1 && timeDiff < (PLAY_AUDIO_1 + PADDING)) {
-      AudioPlayer.play(AUDIO_1);
-    } else if (timeDiff >= PLAY_AUDIO_2 && timeDiff < (PLAY_AUDIO_2 + PADDING)) {
-      AudioPlayer.play(AUDIO_2);
-      that.pause();
-    }
-  }
-
-  start() {
-    const that = this;
-
-    if (this.state.hasStarted && this.state.isPaused) {
-      AudioPlayer.play();
-      this.setState({
-
-        startTime: new Date().getTime(),
-        startPauseText: PAUSE_TEXT,
-        btnStyle: "btnPause",
-        isPaused: false,
-
-      });
-
+    const incrementedTime = this.state.elapsedTime + 1;
+    if (incrementedTime === 3600) {
+      AudioPlayer.stop();
+      clearInterval(timer);
     } else {
-
-      //Start Intro Audio
-      AudioPlayer.play(AUDIO_0);
-
-      this.setState({ 
-        startTime: new Date().getTime(),
-        startPauseText: PAUSE_TEXT,
-        hasStarted:true,
-        btnStyle: "btnPause",
-      });
-
+      this.setState({ elapsedTime: incrementedTime }, () => this.maybePlayNextAudio(incrementedTime));      
     }
-
-    this.intervalFunction = setInterval(
-      () => {
-        that.handleTick();
-      }, 1000
-    );
-
-    this.timeoutFunction = setTimeout(
-      () => {
-        let audio = that.state.queue.shift();
-        that.playAudio.bind(that, audio);
-      }, PLAY_AUDIO_1 - this.state.timeDiff
-    )
-
   }
+
+  startTimer = () => {
+    // if timer has been started before, then we are resuming timer
+    if (this.state.hasStarted) {
+      this.resumeTimer();
+    } else {
+      this.initialStartTimer();
+    }
+  }
+  
+  pauseTimer = () => {
+    const that = this;
+    const elapsedTime = this.state.elapsedTime;
+    this.setState({
+      startPauseText: START_TEXT,
+      btnStyle: "btnStart",
+      isPaused: true
+    }, () => {
+      AudioPlayer.pause();
+      clearInterval(timer);
+    });
+  };
+
+  initialStartTimer = () => {
+    const that = this;
+    this.setState({
+      startPauseText: PAUSE_TEXT,
+      btnStyle: "btnPause",
+      isPaused: false
+    }, () => {
+      //AudioPlayer.play();
+      timer.setInterval(() => that.handleTick) 
+    });
+  };
+
+  resumeTimer = () => {
+    const that = this;
+    this.setState({
+      startPauseText: PAUSE_TEXT,
+      btnStyle: "btnPause",
+      isPaused: false
+    }, () => {
+      AudioPlayer.start();
+      timer.setInterval(() => that.handleTick, 1000);
+    });
+  };
 
   playAudio(audio) {
     AudioPlayer.play(audio);
   }
 
-  intervalFunction() {}
-
-  timeoutFunction() {}
-
-  togglePause() {
-    const elapsedTime = this.state.timeDiff;
-    this.setState({
-      startPauseText: START_TEXT,
-      btnStyle: "btn",
-      isPaused: true,
-      elapsedTime: elapsedTime,
-    });
-
-    AudioPlayer.pause();
-    clearInterval(this.intervalFunction);
-  }
-
   reset() {
     this.setState({ 
-      timeDiff: 0, 
       startPauseText: START_TEXT,
       hasStarted:false,
-      isPaused: false,
+      isPaused: null,
       btnStyle: "btn",
       elapsedTime: 0,
     },
-    function() {
+    () => {
       AudioPlayer.stop();
       clearInterval(this.intervalFunction);
     });
-  }
-
-  componentWillUnmount() {
-    clearTimeout(this.timer);
   }
 
 }

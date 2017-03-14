@@ -7,8 +7,10 @@
   },
   "dependencies": {
     "moment": "^2.11.2",
-    "react-native": "^0.20.0",
+    "react": "15.3.1",
+    "react-native": "0.32.0",
     "react-native-audioplayer": "git+https://github.com/puntubabu/react-native-audioplayer.git",
-    "react-native-linear-gradient": "^1.5.2"
+    "react-native-linear-gradient": "^1.5.2",
+    "react-native-timer": "^1.1.2"
   }
 }
